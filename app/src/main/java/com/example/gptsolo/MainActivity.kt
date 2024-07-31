@@ -101,6 +101,7 @@ fun BottomInput(value: String, onInputChange: (String) -> Unit, onPinClick: () -
         }
     }
 }
+//change
 
 @Composable
 fun NotesList(notes: List<Note>) {
