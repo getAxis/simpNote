@@ -23,7 +23,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.*
@@ -32,6 +31,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.sp
 import java.text.SimpleDateFormat
 import java.util.*
+import com.example.gptsolo.R.drawable
+import androidx.compose.ui.graphics.Color
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -48,8 +49,11 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun DailyPlannerApp() {
     var inputText by remember { mutableStateOf("") }
-    var notes by remember { mutableStateOf(listOf<Note>()) }
+    var listnotes by remember { mutableStateOf(listOf<Note>()) }
 
+    fun removeNote(note: Note) {
+        listnotes = listnotes.toMutableList().also { it.remove(note) }
+    }
     Scaffold(
     ) { innerPadding ->
         Column(
@@ -57,21 +61,27 @@ fun DailyPlannerApp() {
                 .padding(innerPadding)
                 .fillMaxSize()
         ) {
-            NotesList(notes)
+            NotesList(notes = listnotes, onDelete = {note -> removeNote(note)})
             Spacer(modifier = Modifier.weight(1f)) // Spacer для размещения полей ввода и кнопки внизу
             BottomInput(inputText, onInputChange = { newText -> inputText = newText }) {
                 val currentDateTime =
-                    SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
-                val newNote = Note(
-                    text = inputText,
-                    dateTime = currentDateTime
-                )
-                notes = notes + newNote
-                inputText = ""
+                    SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(Date())
+                if (inputText != "")
+                {
+                    val newNote = Note(
+                        text = inputText,
+                        dateTime = currentDateTime
+                    )
+                    listnotes = listnotes + newNote
+                    inputText = ""
+                }
+
+
             }
         }
     }
 }
+
 //2
 @Composable
 fun BottomInput(value: String, onInputChange: (String) -> Unit, onPinClick: () -> Unit) {
@@ -104,19 +114,20 @@ fun BottomInput(value: String, onInputChange: (String) -> Unit, onPinClick: () -
 //change
 
 @Composable
-fun NotesList(notes: List<Note>) {
+fun NotesList(notes: List<Note>, onDelete: (Note) -> Unit) {
     Column(
         modifier = Modifier.fillMaxWidth()
     ) {
         notes.forEach { note ->
-            NoteCard(note)
+            NoteCard(note, onDelete = { onDelete(note) })
             Spacer(modifier = Modifier.height(8.dp))
         }
     }
+
 }
 
 @Composable
-fun NoteCard(note: Note) {
+fun NoteCard(note: Note, onDelete:() -> Unit) {
     Row(modifier = Modifier.padding(all = 8.dp)) {
         Spacer(modifier = Modifier.width(8.dp))
         Surface(
@@ -143,7 +154,26 @@ fun NoteCard(note: Note) {
                     style = MaterialTheme.typography.bodyMedium
                 )
             }
+            Box() {
+                // Вложенные элементы
+                Button(
+                    onClick = {onDelete()},
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)  // Размещаем в правом верхнем углу
+                        .padding(3.dp),  // Отступы от краев контейнера
+                    colors = ButtonDefaults. buttonColors(
+                        containerColor = Color.Transparent
+                    )
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.trashcon),
+                        contentDescription = "Remote note",
+                        modifier = Modifier
+                            .size(24.dp)
 
+                    )
+                }
+            }
         }
 
     }
@@ -161,11 +191,10 @@ fun AppTheme(content: @Composable () -> Unit) {
     )
 }
 
+
 @Preview(showBackground = true)
 @Composable
 fun PreviewDailyPlannerApp() {
     GptsoloTheme(){
-
-        NoteCard(Note(dateTime = "231312",text = "dasdad"))
     }
 }
