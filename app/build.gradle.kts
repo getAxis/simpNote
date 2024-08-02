@@ -1,7 +1,12 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
+
+
 }
+apply(plugin = "kotlin-kapt")
+
+
 
 android {
     namespace = "com.example.gptsolo"
@@ -51,6 +56,10 @@ android {
 
 dependencies {
 
+    implementation("androidx.room:room-runtime:2.6.1")
+    // Для корутинной поддержки (если необходимо)
+    implementation ("androidx.room:room-ktx:2.4.2")
+    implementation("com.google.code.gson:gson:2.8.8")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)

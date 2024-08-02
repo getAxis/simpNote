@@ -1,5 +1,4 @@
 package com.example.gptsolo
-
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -27,12 +26,13 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.unit.sp
 import java.text.SimpleDateFormat
+import android.content.Context
 import java.util.*
-import com.example.gptsolo.R.drawable
 import androidx.compose.ui.graphics.Color
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,19 +40,20 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             AppTheme {
-                DailyPlannerApp()
+                DailyPlannerApp(applicationContext)
             }
         }
     }
 }
 
 @Composable
-fun DailyPlannerApp() {
+fun DailyPlannerApp(context: Context) {
     var inputText by remember { mutableStateOf("") }
-    var listnotes by remember { mutableStateOf(listOf<Note>()) }
+    var listnotes by remember { mutableStateOf(PreferencesHelper.getNotes(context)) }
 
     fun removeNote(note: Note) {
         listnotes = listnotes.toMutableList().also { it.remove(note) }
+        PreferencesHelper.saveNotes(context,listnotes)
     }
     Scaffold(
     ) { innerPadding ->
@@ -74,6 +75,7 @@ fun DailyPlannerApp() {
                     )
                     listnotes = listnotes + newNote
                     inputText = ""
+                    PreferencesHelper.saveNotes(context, listnotes)
                 }
 
 
@@ -83,6 +85,7 @@ fun DailyPlannerApp() {
 }
 
 //2
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BottomInput(value: String, onInputChange: (String) -> Unit, onPinClick: () -> Unit) {
     Row(
@@ -99,13 +102,18 @@ fun BottomInput(value: String, onInputChange: (String) -> Unit, onPinClick: () -
                 .weight(1f)
                 .padding(16.dp),
             singleLine = true,
-            label = { Text("Print some text") }
+            label = { Text("Print some text") },
+            colors = OutlinedTextFieldDefaults.colors(
+                 focusedBorderColor = Peach20)
         )
+
         Spacer(modifier = Modifier.width(1.dp))
         Button(
-            onClick = onPinClick,
             modifier = Modifier
-                .padding(3.dp)
+                .padding(3.dp),
+            onClick = onPinClick,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Peach20)
         ) {
             Text("Pin")
         }
@@ -179,10 +187,7 @@ fun NoteCard(note: Note, onDelete:() -> Unit) {
     }
 }
 
-data class Note(
-    val text: String,
-    val dateTime: String
-)
+data class Note(val id: Int = 0,val text: String,val dateTime: String)
 
 @Composable
 fun AppTheme(content: @Composable () -> Unit) {
