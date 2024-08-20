@@ -209,6 +209,7 @@ fun NoteCard(note: Note, onDelete:() -> Unit) {
                     style = MaterialTheme.typography.bodyMedium
                 )
             }
+
             Box() {
                 // Вложенные элементы
                 Button(
