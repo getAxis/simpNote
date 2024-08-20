@@ -57,30 +57,42 @@ fun DailyPlannerApp(context: Context) {
     }
     Scaffold(
     ) { innerPadding ->
-        Column(
+        Box(
             modifier = Modifier
                 .padding(innerPadding)
-                .fillMaxSize()
-        ) {
-            NotesList(notes = listnotes, onDelete = {note -> removeNote(note)})
-            Spacer(modifier = Modifier.weight(1f)) // Spacer для размещения полей ввода и кнопки внизу
-            BottomInput(inputText, onInputChange = { newText -> inputText = newText }) {
-                val currentDateTime =
-                    SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(Date())
-                if (inputText != "")
-                {
-                    val newNote = Note(
-                        text = inputText,
-                        dateTime = currentDateTime
-                    )
-                    listnotes = listnotes + newNote
-                    inputText = ""
-                    PreferencesHelper.saveNotes(context, listnotes)
-                }
-
+                .fillMaxSize()   // гарантирует, что Box займет всё пространство
+        ){
+            Column(
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .fillMaxSize()
+            ) {
+                NotesList(notes = listnotes, onDelete = {note -> removeNote(note)})
+                //Spacer(modifier = Modifier.weight(1f)) // Spacer для размещения полей ввода и кнопки внизу
 
             }
+            Column (modifier =  Modifier
+                .fillMaxWidth()
+                .align(Alignment.BottomCenter)
+            ){
+                BottomInput(inputText, onInputChange = { newText -> inputText = newText }) {
+                    val currentDateTime =
+                        SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(Date())
+                    if (inputText != "")
+                    {
+                        val newNote = Note(
+                            text = inputText,
+                            dateTime = currentDateTime
+                        )
+                        listnotes = listnotes + newNote
+                        inputText = ""
+                        PreferencesHelper.saveNotes(context, listnotes)
+                    }
+                }
+            }
         }
+
+
     }
 }
 
@@ -106,7 +118,6 @@ fun BottomInput(value: String, onInputChange: (String) -> Unit, onPinClick: () -
             colors = OutlinedTextFieldDefaults.colors(
                  focusedBorderColor = Peach20)
         )
-
         Spacer(modifier = Modifier.width(1.dp))
         Button(
             modifier = Modifier
@@ -123,12 +134,48 @@ fun BottomInput(value: String, onInputChange: (String) -> Unit, onPinClick: () -
 
 @Composable
 fun NotesList(notes: List<Note>, onDelete: (Note) -> Unit) {
+    var count = 1
     Column(
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight()
     ) {
-        notes.forEach { note ->
-            NoteCard(note, onDelete = { onDelete(note) })
-            Spacer(modifier = Modifier.height(8.dp))
+        val leftColumNotes = mutableListOf<Note>()
+        val rightColumNotes = mutableListOf<Note>()
+
+        notes.forEachIndexed  { index, note ->
+            if(index %2 ==0){
+                leftColumNotes.add(note)
+                count ++
+            }
+            else {
+                rightColumNotes.add(note)
+                count ++
+            }
+
+        }
+        Row(modifier = Modifier.fillMaxWidth()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .weight(1f)
+            ) {
+                leftColumNotes.forEach { note ->
+                    NoteCard(note, onDelete = { onDelete(note) })
+
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+            }
+            Column(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .weight(1f)
+            ) {
+                rightColumNotes.forEach { note ->
+                    NoteCard(note, onDelete = { onDelete(note) })
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+            }
         }
     }
 
@@ -201,5 +248,6 @@ fun AppTheme(content: @Composable () -> Unit) {
 @Composable
 fun PreviewDailyPlannerApp() {
     GptsoloTheme(){
+
     }
 }
